@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Lumina AI Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { manrope: ['Manrope', 'sans-serif'] },
+        colors: {
+          bg: '#0d0d0f',
+          surface: '#111113',
+          card: '#1a1a1e',
+          border: '#2a2a30',
+          accent: '#7c3aed',
+          accentHover: '#6d28d9',
+          accentBlue: '#3b82f6',
+          textPrimary: '#f0f0f5',
+          textSecondary: '#8b8b9e',
+          textMuted: '#4a4a5a',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #111113;
+    --card: #1a1a1e;
+    --border: #2a2a30;
+    --accent: #7c3aed;
+    --accent-glow: rgba(124,58,237,0.35);
+    --accent-blue: #3b82f6;
+    --text-primary: #f0f0f5;
+    --text-secondary: #8b8b9e;
+    --text-muted: #4a4a5a;
+    --gradient-1: linear-gradient(135deg, #7c3aed, #3b82f6);
+    --sidebar-w: 72px;
+    --panel-w: 320px;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Manrope', sans-serif;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* ───────── SCROLLBAR ───────── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: #3a3a4a; border-radius: 99px; }
+
+  /* ───────── LAYOUT ───────── */
+  #app {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) var(--panel-w) 1fr;
+    grid-template-rows: 100vh;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ───────── SIDEBAR ───────── */
+  #sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 0;
+    gap: 6px;
+    z-index: 50;
+  }
+
+  .logo-mark {
+    width: 40px;
+    height: 40px;
+    background: var(--gradient-1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 0 24px var(--accent-glow);
+    flex-shrink: 0;
+  }
+
+  .nav-item {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .nav-item:hover { background: rgba(124,58,237,0.15); color: var(--text-secondary); }
+  .nav-item.active { background: rgba(124,58,237,0.2); color: var(--accent); }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    width: 3px;
+    height: 22px;
+    background: var(--gradient-1);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .sidebar-divider {
+    width: 32px;
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0;
+  }
+
+  /* ───────── CONTROL PANEL ───────── */
+  #panel {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .panel-header {
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .panel-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+  }
+
+  .panel-header p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .panel-section {
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(42,42,48,0.5);
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  /* ───────── PROMPT AREA ───────── */
+  .prompt-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .prompt-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+  }
+
+  .prompt-box textarea {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: none;
+    width: 100%;
+    min-height: 90px;
+    placeholder-color: var(--text-muted);
+  }
+  .prompt-box textarea::placeholder { color: var(--text-muted); }
+
+  .char-count {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 6px;
+  }
+
+  /* ───────── NEG PROMPT TOGGLE ───────── */
+  .neg-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 0 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    user-select: none;
+  }
+  .neg-toggle svg { transition: transform 0.2s; }
+  .neg-toggle.open svg { transform: rotate(180deg); }
+
+  .neg-prompt-area {
+    display: none;
+    padding-top: 8px;
+  }
+  .neg-prompt-area.visible { display: block; }
+
+  /* ───────── ASPECT RATIO GRID ───────── */
+  .ratio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .ratio-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .ratio-btn:hover { border-color: rgba(124,58,237,0.4); color: var(--text-primary); }
+  .ratio-btn.selected {
+    background: rgba(124,58,237,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .ratio-preview {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  /* ───────── SLIDER ───────── */
+  .slider-wrap { position: relative; }
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--gradient-1);
+    box-shadow: 0 0 8px var(--accent-glow);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .slider-value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(124,58,237,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: center;
+  }
+
+  /* ───────── IMG COUNT STEPPER ───────── */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .stepper-btn {
+    width: 30px;
+    height: 30px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 16px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .stepper-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .stepper-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 24px;
+    text-align: center;
+  }
+
+  /* ───────── GENERATE BTN ───────── */
+  #generateBtn {
+    width: 100%;
+    padding: 14px;
+    background: var(--gradient-1);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+  }
+  #generateBtn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(124,58,237,0.55); }
+  #generateBtn:active { transform: translateY(0); }
+  #generateBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  #generateBtn .btn-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+    transform: translateX(-100%);
+  }
+  #generateBtn:not(:disabled):hover .btn-shimmer {
+    animation: btnShimmer 0.6s ease forwards;
+  }
+  @keyframes btnShimmer {
+    to { transform: translateX(100%); }
+  }
+
+  /* ───────── MAIN CANVAS AREA ───────── */
+  #canvas {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .canvas-topbar {
+    height: 58px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    flex-shrink: 0;
+    background: rgba(13,13,15,0.95);
+    backdrop-filter: blur(10px);
+  }
+
+  .topbar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .topbar-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+    flex-shrink: 0;
+  }
+  .status-dot.busy {
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ───────── GALLERY ───────── */
+  #gallery {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .gallery-grid {
+    columns: 3;
+    column-gap: 14px;
+  }
+
+  @media (max-width: 1200px) { .gallery-grid { columns: 2; } }
+
+  .gallery-item {
+    break-inside: avoid;
+    margin-bottom: 14px;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--card);
+    border: 1px solid var(--border);
+    group: true;
+    cursor: pointer;
+    animation: itemIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    opacity: 0;
+  }
+
+  @keyframes itemIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+  }
+
+  .gallery-item img {
+    width: 100%;
+    display: block;
+    transition: transform 0.4s;
+  }
+
+  .gallery-item:hover img { transform: scale(1.03); }
+
+  .gallery-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.25s;
+    display: flex;
+    align-items: flex-end;
+    padding: 14px;
+    gap: 8px;
+  }
+  .gallery-item:hover .gallery-overlay { opacity: 1; }
+
+  .overlay-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'Manrope', sans-serif;
+    transition: all 0.15s;
+  }
+  .overlay-btn.download {
+    background: rgba(124,58,237,0.9);
+    color: white;
+  }
+  .overlay-btn.download:hover { background: var(--accent); }
+  .overlay-btn.delete {
+    background: rgba(239,68,68,0.85);
+    color: white;
+  }
+  .overlay-btn.delete:hover { background: #ef4444; }
+
+  /* ───────── SHIMMER CARDS ───────── */
+  .shimmer-card {
+    break-inside: avoid;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--card);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .shimmer-inner {
+    background: linear-gradient(
+      90deg,
+      var(--card) 0%,
+      rgba(60,60,75,0.5) 40%,
+      rgba(80,80,100,0.4) 50%,
+      rgba(60,60,75,0.5) 60%,
+      var(--card) 100%
+    );
+    background-size: 300% 100%;
+    animation: shimmer 1.8s infinite;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 150% 0; }
+    100% { background-position: -150% 0; }
+  }
+
+  /* ───────── EMPTY STATE ───────── */
+  #emptyState {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    pointer-events: none;
+  }
+
+  .empty-orb {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(124,58,237,0.4), rgba(59,130,246,0.1) 60%, transparent);
+    border: 1px solid rgba(124,58,237,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px rgba(124,58,237,0.15);
+    animation: floatOrb 4s ease-in-out infinite;
+  }
+
+  @keyframes floatOrb {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+  }
+
+  .empty-title { font-size: 18px; font-weight: 700; color: var(--text-secondary); }
+  .empty-sub   { font-size: 13px; color: var(--text-muted); text-align: center; max-width: 260px; line-height: 1.6; }
+
+  /* ───────── PROGRESS BAR ───────── */
+  #progressWrap {
+    padding: 0 24px 14px;
+    display: none;
+  }
+
+  .progress-track {
+    height: 3px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--gradient-1);
+    border-radius: 99px;
+    box-shadow: 0 0 10px var(--accent-glow);
+    transition: width 0.4s ease;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 7px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ───────── TOAST ───────── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error { border-color: rgba(239,68,68,0.4); }
+  #toast.success { border-color: rgba(34,197,94,0.4); }
+
+  /* ───────── MOBILE OVERLAY ───────── */
+  #mobileOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 40;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ───────── MOBILE FAB ───────── */
+  #mobileFab {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gradient-1);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.5);
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+  #mobileFab:active { transform: scale(0.94); }
+
+  /* ───────── MOBILE PANEL ───────── */
+  #mobilePanel {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    z-index: 45;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    max-height: 88vh;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  #mobilePanel.open { transform: translateY(0); }
+
+  .mobile-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    margin: 14px auto 0;
+  }
+
+  /* ───────── RESPONSIVE BREAKPOINTS ───────── */
+  @media (max-width: 900px) {
+    #app {
+      grid-template-columns: 56px 1fr;
+      grid-template-rows: 100vh;
+    }
+    #panel { display: none; }
+    #mobileFab { display: flex; }
+    #sidebar { --sidebar-w: 56px; }
+  }
+
+  @media (max-width: 600px) {
+    #app { grid-template-columns: 1fr; }
+    #sidebar { display: none; }
+    #gallery { padding: 14px; }
+    .canvas-topbar { padding: 0 14px; }
+    .gallery-grid { columns: 1; }
+    #mobileFab { bottom: 18px; right: 18px; }
+  }
+
+  /* ───────── MODEL BADGE ───────── */
+  .model-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: var(--accentBlue);
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* ───────── CUSTOM SELECT ───────── */
+  .custom-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 12px;
+    color: var(--text-primary);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    width: 100%;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a4a5a' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .custom-select:focus { border-color: var(--accent); }
+  .custom-select option { background: var(--card); }
+
+  /* ───────── NOISE OVERLAY ───────── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  /* ───────── RETRY BADGE ───────── */
+  .retry-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(124,58,237,0.2);
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Seed tag */
+  .seed-tag {
+    font-size: 10px;
+    color: var(--text-muted);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 6px;
+    padding: 3px 7px;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ───────── ANIMATION UTILITIES ───────── */
+  .fade-in { animation: fadeIn 0.3s ease forwards; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Done!</span>
+</div>
+
+<!-- MOBILE OVERLAY -->
+<div id="mobileOverlay" onclick="closeMobilePanel()"></div>
+
+<!-- MOBILE FAB -->
+<button id="mobileFab" onclick="openMobilePanel()" title="Open Settings">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+  </svg>
+</button>
+
+<!-- MOBILE BOTTOM SHEET -->
+<div id="mobilePanel">
+  <div class="mobile-handle"></div>
+  <div id="mobilePanelContent" style="padding:0 0 20px;"></div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- ── SIDEBAR ── -->
+  <nav id="sidebar">
+    <div class="logo-mark">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </div>
+
+    <div class="nav-item active" title="Generate">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>
+      </svg>
+    </div>
+
+    <div class="nav-item" title="Personal Feed">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+      </svg>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="nav-item" title="Training">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+
+    <div class="nav-item" title="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <div class="nav-item" title="Profile" style="margin-bottom:4px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+    </div>
+  </nav>
+
+  <!-- ── CONTROL PANEL ── -->
+  <aside id="panel">
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <h2>Image Generation</h2>
+        <span class="model-badge">
+          <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>
+          Gemini Flash
+        </span>
+      </div>
+      <p>Powered by Gemini 2.5 Flash</p>
+    </div>
+
+    <!-- Prompt -->
+    <div class="panel-section">
+      <div class="section-label">Prompt</div>
+      <div class="prompt-box">
+        <textarea
+          id="promptInput"
+          placeholder="Describe the image you want to create… e.g. 'A cinematic landscape of glowing neon city at midnight, ultra detailed, 8K'"
+          maxlength="1500"
+          oninput="updateCharCount(this)"
+        ></textarea>
+        <div class="char-count"><span id="charCount">0</span> / 1500</div>
+      </div>
+
+      <!-- Negative Prompt Toggle -->
+      <div class="neg-toggle" id="negToggle" onclick="toggleNegPrompt()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Negative Prompt
+        <svg style="margin-left:auto" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+
+      <div class="neg-prompt-area" id="negPromptArea">
+        <div class="prompt-box">
+          <textarea
+            id="negPromptInput"
+            placeholder="What to exclude… e.g. 'blurry, low quality, watermark, text'"
+            style="min-height:60px;"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aspect Ratio -->
+    <div class="panel-section">
+      <div class="section-label">Aspect Ratio</div>
+      <div class="ratio-grid">
+        <div class="ratio-btn selected" data-ratio="1:1" onclick="selectRatio(this)">
+          <div class="ratio-preview" style="width:28px;height:28px;"></div>
+          <span>1:1</span>
+        </div>
+        <div class="ratio-btn" data-ratio="16:9" onclick="selectRatio(this)">
+          <div class="ratio-preview" style="width:36px;height:20px;"></div>
+          <span>16:9</span>
+        </div>
+        <div class="ratio-btn" data-ratio="9:16" onclick="selectRatio(this)">
+          <div class="ratio-preview" style="width:20px;height:36px;"></div>
+          <span>9:16</span>
+        </div>
+        <div class="ratio-btn" data-ratio="4:3" onclick="selectRatio(this)">
+          <div class="ratio-preview" style="width:32px;height:24px;"></div>
+          <span>4:3</span>
+        </div>
+        <div class="ratio-btn" data-ratio="3:4" onclick="selectRatio(this)">
+          <div class="ratio-preview" style="width:24px;height:32px;"></div>
+          <span>3:4</span>
+        </div>
+        <div class="ratio-btn" data-ratio="2:3" onclick="selectRatio(this)">
+          <div class="ratio-preview" style="width:22px;height:33px;"></div>
+          <span>2:3</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Number of Images -->
+    <div class="panel-section">
+      <div class="section-label" style="margin-bottom:12px;">Number of Images</div>
+      <div class="stepper">
+        <div class="stepper-btn" onclick="adjustCount(-1)">−</div>
+        <div class="stepper-val" id="imgCountVal">1</div>
+        <div class="stepper-btn" onclick="adjustCount(1)">+</div>
+        <div style="flex:1"></div>
+        <span style="font-size:11px;color:var(--text-muted);">Max 4</span>
+      </div>
+    </div>
+
+    <!-- Guidance Scale -->
+    <div class="panel-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="section-label" style="margin:0;">Guidance Scale</div>
+        <span class="slider-value" id="guidanceVal">7</span>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="guidanceSlider" min="1" max="20" value="7" step="0.5" oninput="document.getElementById('guidanceVal').textContent=this.value" />
+        <div class="slider-labels"><span>Creative</span><span>Precise</span></div>
+      </div>
+    </div>
+
+    <!-- Style -->
+    <div class="panel-section">
+      <div class="section-label">Style Preset</div>
+      <select class="custom-select" id="stylePreset">
+        <option value="">None (Auto)</option>
+        <option value="photorealistic">Photorealistic</option>
+        <option value="cinematic">Cinematic</option>
+        <option value="anime">Anime / Illustration</option>
+        <option value="digital art">Digital Art</option>
+        <option value="oil painting">Oil Painting</option>
+        <option value="watercolor">Watercolor</option>
+        <option value="sketch">Pencil Sketch</option>
+        <option value="3d render">3D Render</option>
+        <option value="pixel art">Pixel Art</option>
+        <option value="fantasy">Fantasy / Epic</option>
+      </select>
+    </div>
+
+    <!-- Quality -->
+    <div class="panel-section">
+      <div class="section-label">Quality</div>
+      <select class="custom-select" id="qualityPreset">
+        <option value="high quality, detailed">High Quality</option>
+        <option value="ultra detailed, 8k, masterpiece">Ultra (8K)</option>
+        <option value="">Standard</option>
+      </select>
+    </div>
+
+    <!-- Generate Button -->
+    <div class="panel-section" style="border-bottom:none;">
+      <button id="generateBtn" onclick="generateImages()">
+        <div class="btn-shimmer"></div>
+        <span id="btnText">✦ Generate Images</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CANVAS ── -->
+  <main id="canvas">
+    <div class="canvas-topbar">
+      <div class="topbar-title">Creation Canvas</div>
+      <div class="topbar-stat">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Ready</span>
+      </div>
+      <div class="topbar-stat" style="margin-left:10px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span id="galleryCount">0 images</span>
+      </div>
+      <button onclick="clearGallery()" style="margin-left:10px;background:transparent;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--text-muted);font-size:11px;font-weight:600;cursor:pointer;font-family:Manrope,sans-serif;transition:all 0.15s;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">Clear All</button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div id="progressWrap">
+      <div class="progress-label">
+        <span id="progressLabel">Generating…</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Gallery / Empty State -->
+    <div id="gallery">
+      <!-- Empty state -->
+      <div id="emptyState" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:400px;">
+        <div class="empty-orb">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.7)" stroke-width="1.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="empty-title">Your canvas awaits</div>
+        <div class="empty-sub">Configure your prompt and settings, then hit Generate to bring your ideas to life.</div>
+      </div>
+
+      <!-- Gallery Grid (hidden until images) -->
+      <div class="gallery-grid" id="galleryGrid" style="display:none;"></div>
+    </div>
+  </main>
+
+</div><!-- /app -->
+
+<!-- ════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+/* ──────────────────────────────────────
+   STATE
+──────────────────────────────────────── */
+const API_KEY = "AIzaSyB1rHH4m7iKjTTDDneZmSVH97S8F_DIPFs";
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent";
+
+let gallery = [];       // { id, src, prompt, ratio, timestamp }
+let isGenerating = false;
+let selectedRatio = "1:1";
+let imgCount = 1;
+
+/* ──────────────────────────────────────
+   UTILS
+──────────────────────────────────────── */
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  const icon = document.getElementById("toastIcon");
+  const txt  = document.getElementById("toastMsg");
+  t.className = type;
+  icon.textContent = type === "error" ? "✕" : type === "warning" ? "⚠" : "✓";
+  txt.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function updateCharCount(el) {
+  document.getElementById("charCount").textContent = el.value.length;
+}
+
+function toggleNegPrompt() {
+  const area = document.getElementById("negPromptArea");
+  const toggle = document.getElementById("negToggle");
+  area.classList.toggle("visible");
+  toggle.classList.toggle("open");
+}
+
+function selectRatio(el) {
+  document.querySelectorAll(".ratio-btn").forEach(b => b.classList.remove("selected"));
+  el.classList.add("selected");
+  selectedRatio = el.dataset.ratio;
+}
+
+function adjustCount(delta) {
+  imgCount = Math.max(1, Math.min(4, imgCount + delta));
+  document.getElementById("imgCountVal").textContent = imgCount;
+}
+
+function setStatus(text, busy = false) {
+  document.getElementById("statusText").textContent = text;
+  const dot = document.getElementById("statusDot");
+  dot.classList.toggle("busy", busy);
+}
+
+function setProgress(pct, label = "Generating…") {
+  const wrap = document.getElementById("progressWrap");
+  const fill = document.getElementById("progressFill");
+  const lbl  = document.getElementById("progressLabel");
+  const pctEl = document.getElementById("progressPct");
+  wrap.style.display = "block";
+  fill.style.width = pct + "%";
+  lbl.textContent = label;
+  pctEl.textContent = Math.round(pct) + "%";
+  if (pct >= 100) setTimeout(() => { wrap.style.display = "none"; }, 800);
+}
+
+function updateGalleryCount() {
+  const n = gallery.length;
+  document.getElementById("galleryCount").textContent = n + " image" + (n !== 1 ? "s" : "");
+}
+
+/* ──────────────────────────────────────
+   BUILD FULL PROMPT
+──────────────────────────────────────── */
+function buildPrompt() {
+  const base    = document.getElementById("promptInput").value.trim();
+  const neg     = document.getElementById("negPromptInput").value.trim();
+  const style   = document.getElementById("stylePreset").value;
+  const quality = document.getElementById("qualityPreset").value;
+  const guidance = document.getElementById("guidanceSlider").value;
+
+  if (!base) return null;
+
+  let full = base;
+  if (style)   full += `, ${style} style`;
+  if (quality) full += `, ${quality}`;
+
+  const ratioMap = {
+    "1:1": "square composition",
+    "16:9": "wide landscape 16:9 composition",
+    "9:16": "tall portrait 9:16 composition",
+    "4:3":  "standard 4:3 composition",
+    "3:4":  "portrait 3:4 composition",
+    "2:3":  "tall portrait 2:3 composition"
+  };
+  full += `, ${ratioMap[selectedRatio] || ""}`;
+  full += `. Guidance fidelity level: ${guidance}/20.`;
+  if (neg) full += ` [Avoid: ${neg}]`;
+
+  return full;
+}
+
+/* ──────────────────────────────────────
+   EXPONENTIAL BACKOFF FETCH
+──────────────────────────────────────── */
+async function fetchWithBackoff(prompt, attempt = 0) {
+  const MAX_ATTEMPTS = 5;
+  const body = {
+    contents: [{
+      parts: [{ text: prompt }]
+    }],
+    generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
+  };
+
+  try {
+    const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if (res.status === 429 || res.status >= 500) {
+      if (attempt < MAX_ATTEMPTS - 1) {
+        const wait = Math.pow(2, attempt) * 800 + Math.random() * 400;
+        setStatus(`Rate limited – retry ${attempt + 1}/${MAX_ATTEMPTS - 1}…`, true);
+        setProgress(20 + attempt * 12, `Retrying (${attempt + 1})…`);
+        await delay(wait);
+        return fetchWithBackoff(prompt, attempt + 1);
+      }
+      throw new Error(`API error ${res.status} after ${MAX_ATTEMPTS} attempts`);
+    }
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || `HTTP ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    if (attempt < MAX_ATTEMPTS - 1 && (err.name === "TypeError" || err.message.includes("fetch"))) {
+      const wait = Math.pow(2, attempt) * 1000;
+      await delay(wait);
+      return fetchWithBackoff(prompt, attempt + 1);
+    }
+    throw err;
+  }
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ──────────────────────────────────────
+   GENERATE IMAGES
+──────────────────────────────────────── */
+async function generateImages() {
+  if (isGenerating) return;
+
+  const prompt = buildPrompt();
+  if (!prompt) {
+    showToast("Please enter a prompt first!", "error");
+    document.getElementById("promptInput").focus();
+    return;
+  }
+
+  isGenerating = true;
+  const btn = document.getElementById("generateBtn");
+  const btnText = document.getElementById("btnText");
+  btn.disabled = true;
+  btnText.textContent = "⟳ Generating…";
+  setStatus("Generating…", true);
+  setProgress(5, "Sending request…");
+
+  // Show shimmer placeholders
+  showShimmers(imgCount);
+
+  const results = [];
+  let successCount = 0;
+
+  for (let i = 0; i < imgCount; i++) {
+    const pct = 10 + ((i / imgCount) * 80);
+    setProgress(pct, `Generating image ${i + 1} of ${imgCount}…`);
+
+    try {
+      const data = await fetchWithBackoff(prompt);
+      const imagePart = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+
+      if (!imagePart?.inlineData?.data) {
+        // fallback: check text part
+        const textPart = data?.candidates?.[0]?.content?.parts?.find(p => p.text);
+        console.warn("No image in response:", textPart?.text || data);
+        throw new Error("No image data in response");
+      }
+
+      const base64 = imagePart.inlineData.data;
+      const mime   = imagePart.inlineData.mimeType || "image/png";
+      const src    = `data:${mime};base64,${base64}`;
+
+      const item = {
+        id: Date.now() + i,
+        src,
+        prompt: document.getElementById("promptInput").value.trim(),
+        ratio: selectedRatio,
+        timestamp: new Date()
+      };
+      gallery.push(item);
+      results.push(item);
+      successCount++;
+    } catch (err) {
+      console.error("Generation error:", err);
+      results.push({ error: err.message });
+    }
+  }
+
+  // Remove shimmers, add real images
+  clearShimmers();
+
+  if (successCount > 0) {
+    showGallery();
+    results.forEach((item, idx) => {
+      if (!item.error) {
+        addImageToGrid(item, idx * 80);
+      }
+    });
+    setProgress(100, "Complete!");
+    setStatus("Ready");
+    updateGalleryCount();
+    showToast(`${successCount} image${successCount > 1 ? "s" : ""} generated!`, "success");
+  } else {
+    const errMsg = results.find(r => r.error)?.error || "Unknown error";
+    setProgress(0);
+    setStatus("Error");
+    showToast("Generation failed: " + errMsg, "error");
+  }
+
+  isGenerating = false;
+  btn.disabled = false;
+  btnText.textContent = "✦ Generate Images";
+  setStatus("Ready");
+}
+
+/* ──────────────────────────────────────
+   SHIMMER PLACEHOLDERS
+──────────────────────────────────────── */
+function showShimmers(n) {
+  showGallery();
+  const grid = document.getElementById("galleryGrid");
+  const heights = [220, 280, 200, 260, 240];
+  for (let i = 0; i < n; i++) {
+    const h = heights[i % heights.length];
+    const div = document.createElement("div");
+    div.className = "shimmer-card";
+    div.id = `shimmer-${i}`;
+    div.innerHTML = `<div class="shimmer-inner" style="height:${h}px"></div>`;
+    grid.prepend(div);
+  }
+}
+
+function clearShimmers() {
+  document.querySelectorAll('[id^="shimmer-"]').forEach(el => el.remove());
+}
+
+/* ──────────────────────────────────────
+   GALLERY HELPERS
+──────────────────────────────────────── */
+function showGallery() {
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("galleryGrid").style.display = "block";
+}
+
+function addImageToGrid(item, animDelay = 0) {
+  const grid = document.getElementById("galleryGrid");
+  const div = document.createElement("div");
+  div.className = "gallery-item";
+  div.id = `img-${item.id}`;
+  div.style.animationDelay = animDelay + "ms";
+
+  const ts = item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  div.innerHTML = `
+    <img src="${item.src}" alt="${escapeHtml(item.prompt)}" loading="lazy" />
+    <div class="seed-tag">${item.ratio} · ${ts}</div>
+    <div class="gallery-overlay">
+      <button class="overlay-btn download" onclick="downloadImage('${item.id}')">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <button class="overlay-btn delete" onclick="deleteImage('${item.id}')">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        Delete
+      </button>
+    </div>
+  `;
+  grid.prepend(div);
+}
+
+function downloadImage(id) {
+  const item = gallery.find(g => g.id == id);
+  if (!item) return;
+  const a = document.createElement("a");
+  a.href = item.src;
+  a.download = `lumina-${id}.png`;
+  a.click();
+  showToast("Image downloaded!", "success");
+}
+
+function deleteImage(id) {
+  gallery = gallery.filter(g => g.id != id);
+  const el = document.getElementById(`img-${id}`);
+  if (el) {
+    el.style.transition = "opacity 0.3s, transform 0.3s";
+    el.style.opacity = "0";
+    el.style.transform = "scale(0.9)";
+    setTimeout(() => el.remove(), 300);
+  }
+  updateGalleryCount();
+  if (gallery.length === 0) {
+    document.getElementById("emptyState").style.display = "flex";
+    document.getElementById("galleryGrid").style.display = "none";
+  }
+}
+
+function clearGallery() {
+  if (gallery.length === 0) return;
+  gallery = [];
+  document.getElementById("galleryGrid").innerHTML = "";
+  document.getElementById("galleryGrid").style.display = "none";
+  document.getElementById("emptyState").style.display = "flex";
+  updateGalleryCount();
+  showToast("Gallery cleared", "success");
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+/* ──────────────────────────────────────
+   MOBILE PANEL MIRRORING
+──────────────────────────────────────── */
+function openMobilePanel() {
+  const content = document.getElementById("mobilePanelContent");
+  const panel   = document.getElementById("panel");
+  content.innerHTML = panel.innerHTML;
+
+  // Re-bind events in mobile clone
+  content.querySelectorAll(".ratio-btn").forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll(".ratio-btn").forEach(x => x.classList.remove("selected"));
+      b.classList.add("selected");
+      selectedRatio = b.dataset.ratio;
+    };
+    if (b.dataset.ratio === selectedRatio) b.classList.add("selected");
+  });
+
+  const mobileGen = content.querySelector("#generateBtn");
+  if (mobileGen) mobileGen.onclick = () => { closeMobilePanel(); generateImages(); };
+
+  document.getElementById("mobilePanel").classList.add("open");
+  document.getElementById("mobileOverlay").style.display = "block";
+}
+
+function closeMobilePanel() {
+  document.getElementById("mobilePanel").classList.remove("open");
+  document.getElementById("mobileOverlay").style.display = "none";
+}
+
+/* ──────────────────────────────────────
+   KEYBOARD SHORTCUT (Ctrl/Cmd + Enter)
+──────────────────────────────────────── */
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    e.preventDefault();
+    generateImages();
+  }
+});
+
+/* ──────────────────────────────────────
+   INIT
+──────────────────────────────────────── */
+updateGalleryCount();
+</script>
+</body>
+</html>
