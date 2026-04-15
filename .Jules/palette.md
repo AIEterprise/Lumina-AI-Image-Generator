@@ -1,0 +1,3 @@
+## 2024-05-24 - Interactive Form Labels
+**Learning:** Using `<div>` for field labels prevents users from clicking the label text to focus the input, negatively impacting usability and screen reader support. Converting them to `<label>` elements with the `for` attribute fixes this interaction and associates the text natively. When styling them like divs, adding `display: block;` and `cursor: pointer;` ensures layout stability and signals clickability.
+**Action:** Always prefer `<label for="...">` over generic `<div>` wrappers for forms, even when building customized or highly styled UI components.

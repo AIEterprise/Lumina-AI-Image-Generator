@@ -163,6 +163,8 @@
   }
 
   .section-label {
+    display: block;
+    cursor: pointer;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -862,7 +864,7 @@
 
     <!-- Prompt -->
     <div class="panel-section">
-      <div class="section-label">Prompt</div>
+      <label class="section-label" for="promptInput">Prompt</label>
       <div class="prompt-box">
         <textarea
           id="promptInput"
@@ -939,7 +941,7 @@
     <!-- Guidance Scale -->
     <div class="panel-section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="section-label" style="margin:0;">Guidance Scale</div>
+        <label class="section-label" for="guidanceSlider" style="margin:0;">Guidance Scale</label>
         <span class="slider-value" id="guidanceVal">7</span>
       </div>
       <div class="slider-wrap">
@@ -950,7 +952,7 @@
 
     <!-- Style -->
     <div class="panel-section">
-      <div class="section-label">Style Preset</div>
+      <label class="section-label" for="stylePreset">Style Preset</label>
       <select class="custom-select" id="stylePreset">
         <option value="">None (Auto)</option>
         <option value="photorealistic">Photorealistic</option>
@@ -968,7 +970,7 @@
 
     <!-- Quality -->
     <div class="panel-section">
-      <div class="section-label">Quality</div>
+      <label class="section-label" for="qualityPreset">Quality</label>
       <select class="custom-select" id="qualityPreset">
         <option value="high quality, detailed">High Quality</option>
         <option value="ultra detailed, 8k, masterpiece">Ultra (8K)</option>
