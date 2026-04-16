@@ -218,6 +218,16 @@
     font-size: 12px;
     font-weight: 600;
     user-select: none;
+    background: none;
+    border: none;
+    font-family: inherit;
+    width: 100%;
+    text-align: left;
+    outline: none;
+  }
+  .neg-toggle:focus-visible {
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px var(--accent);
   }
   .neg-toggle svg { transition: transform 0.2s; }
   .neg-toggle.open svg { transform: rotate(180deg); }
@@ -874,13 +884,13 @@
       </div>
 
       <!-- Negative Prompt Toggle -->
-      <div class="neg-toggle" id="negToggle" onclick="toggleNegPrompt()">
+      <button type="button" class="neg-toggle" id="negToggle" onclick="toggleNegPrompt()" aria-expanded="false" aria-controls="negPromptArea">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
         Negative Prompt
         <svg style="margin-left:auto" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-      </div>
+      </button>
 
       <div class="neg-prompt-area" id="negPromptArea">
         <div class="prompt-box">
@@ -1067,8 +1077,9 @@ function updateCharCount(el) {
 function toggleNegPrompt() {
   const area = document.getElementById("negPromptArea");
   const toggle = document.getElementById("negToggle");
-  area.classList.toggle("visible");
+  const isVisible = area.classList.toggle("visible");
   toggle.classList.toggle("open");
+  toggle.setAttribute("aria-expanded", isVisible);
 }
 
 function selectRatio(el) {
