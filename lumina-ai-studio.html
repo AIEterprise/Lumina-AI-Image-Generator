@@ -775,6 +775,15 @@
   /* ───────── ANIMATION UTILITIES ───────── */
   .fade-in { animation: fadeIn 0.3s ease forwards; }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  /* ───────── FOCUS UTILITIES ───────── */
+  .nav-item:focus-visible,
+  .ratio-btn:focus-visible,
+  .stepper-btn:focus-visible,
+  .neg-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 </style>
 </head>
 <body>
@@ -812,39 +821,39 @@
       </svg>
     </div>
 
-    <div class="nav-item active" title="Generate">
+    <button type="button" class="nav-item active" title="Generate" aria-label="Generate">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>
       </svg>
-    </div>
+    </button>
 
-    <div class="nav-item" title="Personal Feed">
+    <button type="button" class="nav-item" title="Personal Feed" aria-label="Personal Feed">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
       </svg>
-    </div>
+    </button>
 
     <div class="sidebar-divider"></div>
 
-    <div class="nav-item" title="Training">
+    <button type="button" class="nav-item" title="Training" aria-label="Training">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
       </svg>
-    </div>
+    </button>
 
-    <div class="nav-item" title="Settings">
+    <button type="button" class="nav-item" title="Settings" aria-label="Settings">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
       </svg>
-    </div>
+    </button>
 
     <div style="flex:1"></div>
 
-    <div class="nav-item" title="Profile" style="margin-bottom:4px;">
+    <button type="button" class="nav-item" title="Profile" aria-label="Profile" style="margin-bottom:4px;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
       </svg>
-    </div>
+    </button>
   </nav>
 
   <!-- ── CONTROL PANEL ── -->
@@ -874,13 +883,13 @@
       </div>
 
       <!-- Negative Prompt Toggle -->
-      <div class="neg-toggle" id="negToggle" onclick="toggleNegPrompt()">
+      <button type="button" class="neg-toggle" id="negToggle" onclick="toggleNegPrompt()" aria-expanded="false" aria-controls="negPromptArea">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
         Negative Prompt
         <svg style="margin-left:auto" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-      </div>
+      </button>
 
       <div class="neg-prompt-area" id="negPromptArea">
         <div class="prompt-box">
@@ -896,31 +905,31 @@
     <!-- Aspect Ratio -->
     <div class="panel-section">
       <div class="section-label">Aspect Ratio</div>
-      <div class="ratio-grid">
-        <div class="ratio-btn selected" data-ratio="1:1" onclick="selectRatio(this)">
+      <div class="ratio-grid" role="radiogroup" aria-label="Aspect Ratio">
+        <button type="button" class="ratio-btn selected" data-ratio="1:1" onclick="selectRatio(this)" role="radio" aria-checked="true">
           <div class="ratio-preview" style="width:28px;height:28px;"></div>
           <span>1:1</span>
-        </div>
-        <div class="ratio-btn" data-ratio="16:9" onclick="selectRatio(this)">
+        </button>
+        <button type="button" class="ratio-btn" data-ratio="16:9" onclick="selectRatio(this)" role="radio" aria-checked="false">
           <div class="ratio-preview" style="width:36px;height:20px;"></div>
           <span>16:9</span>
-        </div>
-        <div class="ratio-btn" data-ratio="9:16" onclick="selectRatio(this)">
+        </button>
+        <button type="button" class="ratio-btn" data-ratio="9:16" onclick="selectRatio(this)" role="radio" aria-checked="false">
           <div class="ratio-preview" style="width:20px;height:36px;"></div>
           <span>9:16</span>
-        </div>
-        <div class="ratio-btn" data-ratio="4:3" onclick="selectRatio(this)">
+        </button>
+        <button type="button" class="ratio-btn" data-ratio="4:3" onclick="selectRatio(this)" role="radio" aria-checked="false">
           <div class="ratio-preview" style="width:32px;height:24px;"></div>
           <span>4:3</span>
-        </div>
-        <div class="ratio-btn" data-ratio="3:4" onclick="selectRatio(this)">
+        </button>
+        <button type="button" class="ratio-btn" data-ratio="3:4" onclick="selectRatio(this)" role="radio" aria-checked="false">
           <div class="ratio-preview" style="width:24px;height:32px;"></div>
           <span>3:4</span>
-        </div>
-        <div class="ratio-btn" data-ratio="2:3" onclick="selectRatio(this)">
+        </button>
+        <button type="button" class="ratio-btn" data-ratio="2:3" onclick="selectRatio(this)" role="radio" aria-checked="false">
           <div class="ratio-preview" style="width:22px;height:33px;"></div>
           <span>2:3</span>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -928,9 +937,9 @@
     <div class="panel-section">
       <div class="section-label" style="margin-bottom:12px;">Number of Images</div>
       <div class="stepper">
-        <div class="stepper-btn" onclick="adjustCount(-1)">−</div>
-        <div class="stepper-val" id="imgCountVal">1</div>
-        <div class="stepper-btn" onclick="adjustCount(1)">+</div>
+        <button type="button" class="stepper-btn" onclick="adjustCount(-1)" aria-label="Decrease image count">−</button>
+        <div class="stepper-val" id="imgCountVal" aria-live="polite">1</div>
+        <button type="button" class="stepper-btn" onclick="adjustCount(1)" aria-label="Increase image count">+</button>
         <div style="flex:1"></div>
         <span style="font-size:11px;color:var(--text-muted);">Max 4</span>
       </div>
@@ -1069,11 +1078,17 @@ function toggleNegPrompt() {
   const toggle = document.getElementById("negToggle");
   area.classList.toggle("visible");
   toggle.classList.toggle("open");
+  const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+  toggle.setAttribute("aria-expanded", !isExpanded);
 }
 
 function selectRatio(el) {
-  document.querySelectorAll(".ratio-btn").forEach(b => b.classList.remove("selected"));
+  document.querySelectorAll(".ratio-btn").forEach(b => {
+    b.classList.remove("selected");
+    b.setAttribute("aria-checked", "false");
+  });
   el.classList.add("selected");
+  el.setAttribute("aria-checked", "true");
   selectedRatio = el.dataset.ratio;
 }
 
@@ -1379,11 +1394,20 @@ function openMobilePanel() {
   // Re-bind events in mobile clone
   content.querySelectorAll(".ratio-btn").forEach(b => {
     b.onclick = () => {
-      document.querySelectorAll(".ratio-btn").forEach(x => x.classList.remove("selected"));
+      document.querySelectorAll(".ratio-btn").forEach(x => {
+        x.classList.remove("selected");
+        x.setAttribute("aria-checked", "false");
+      });
       b.classList.add("selected");
+      b.setAttribute("aria-checked", "true");
       selectedRatio = b.dataset.ratio;
     };
-    if (b.dataset.ratio === selectedRatio) b.classList.add("selected");
+    if (b.dataset.ratio === selectedRatio) {
+      b.classList.add("selected");
+      b.setAttribute("aria-checked", "true");
+    } else {
+      b.setAttribute("aria-checked", "false");
+    }
   });
 
   const mobileGen = content.querySelector("#generateBtn");
