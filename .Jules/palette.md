@@ -1,0 +1,3 @@
+## 2024-04-18 - [Accessibility on lumina-ai-studio.html]
+**Learning:** Found that custom pseudo-button interactions implemented as `<div>`s lose their inherent accessibility keyboard accessibility. Also, standalone `<div class="section-label">`s acting as labels for inputs do not connect semantically.
+**Action:** Replaced pseudo-button `<div>`s with `<button type="button">`, updated JS logic to toggle `aria-pressed` / `aria-expanded`, added `aria-label`s for icon-only buttons, and changed input group descriptors to semantic `<label>` elements connected via the `for` attribute. Added `:focus-visible` to standard UI to help with keyboard users without negatively impacting mouse click visuals.
